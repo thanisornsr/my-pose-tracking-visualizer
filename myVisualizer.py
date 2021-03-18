@@ -21,6 +21,7 @@ class Posetrack_Visualizer:
 			else:
 				print('Wrong type of data [imgs]')
 		if to_add_heatmaps is not None:
+			print(to_add_heatmaps[-1])
 			if to_add_heatmaps[-1] == 17:
 				self.heatmapts = to_add_heatmaps
 				self.output_shape = (to_add_heatmaps.shape[1],to_add_heatmaps.shape[2])
