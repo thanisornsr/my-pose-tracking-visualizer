@@ -10,7 +10,7 @@ class Posetrack_Visualizer:
 		self.input_shape = None
 		self.output_shape = None
 		self.imgs = []
-		self.heatmapts = []
+		self.heatmaps = []
 		self.valids = []
 
 	def add_data(self,to_add_imgs=None,to_add_heatmaps=None,to_add_valids=None):
@@ -22,7 +22,7 @@ class Posetrack_Visualizer:
 				print('Wrong type of data [imgs]')
 		if to_add_heatmaps is not None:
 			if to_add_heatmaps.shape[-1] == 17:
-				self.heatmapts = to_add_heatmaps
+				self.heatmaps = to_add_heatmaps
 				self.output_shape = (to_add_heatmaps.shape[1],to_add_heatmaps.shape[2])
 			else:
 				print('Wrong type of data [heatmaps]')
