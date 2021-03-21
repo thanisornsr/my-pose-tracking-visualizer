@@ -50,7 +50,7 @@ class Posetrack_Visualizer:
 				else:
 					pvalid[j,:,:,k] = np.zeros(poutput_shape)
 		return pvalid
-		
+
 	def set_valid_threshold(self,new_thres):
 		self.thres = new_thres
 
@@ -101,27 +101,42 @@ class Posetrack_Visualizer:
 				plt.scatter(x = xs, y = ys, c = 'r', s = 15)
 		plt.show()
 
-	# def show_skeleton(self,idx):
-	# 	temp_img3 = np.reshape(self.imgs[idx,:,:,:],(*self.input_shape,3))
-	# 	temp_heatmap3 = np.reshape(self.heatmaps[idx,:,:,:],(*self.output_shape,17))
-	# 	crop_resize = resize(temp_img3, self.output_shape)
-	# 	kp_x = []
-	# 	kp_y = []
-	# 	for j in range(17):
-	# 		result = np.where(temp_heatmap3[:,:,j] == np.amax(temp_heatmap3[:,:,j]))
-	# 		ty = result [0][0]
-	# 		tx = result [1][0]
-	# 		kp_x.append(tx)
-	# 		kp_y.append(ty)
+	def show_skeleton(self,idx):
+		temp_img3 = np.reshape(self.imgs[idx,:,:,:],(*self.input_shape,3))
+		temp_heatmap3 = np.reshape(self.heatmaps[idx,:,:,:],(*self.output_shape,17))
+		temp_valid3 = self.valids[idx,0,0,:]
+		crop_resize = resize(temp_img3, self.output_shape)
+		kp_x = []
+		kp_y = []
+		for j in range(17):
+			if temp_valid3[j] > 0:
+				result = np.where(temp_heatmap3[:,:,j] == np.amax(temp_heatmap3[:,:,j]))
+				ty = result [0][0]
+				tx = result [1][0]
+			else:
+				ty = -1
+				tx = -1
+			kp_x.append(tx)
+			kp_y.append(ty)
 
-	# 	if self.dataset_name == 'Posetrack':
-	# 		skeleton_list = [(0,1),(0,2),(0,3),(0,4),(1,5),(1,6),(5,7),(6,8),(7,9),(8,10),(6,12),(5,11),(12,11),(12,14),(11,13),(14,16),(13,15)]
-	# 	else:
-	# 		skeleton_list = [(0,1),(0,2),(0,3),(0,4),(1,5),(1,6),(5,7),(6,8),(7,9),(8,10),(6,12),(5,11),(12,11),(12,14),(11,13),(14,16),(13,15)]
+		if self.dataset_name == 'Posetrack':
+			skeleton_list = [(0,1),(0,2),(0,3),(0,4),(5,6),(5,7),(6,8),(7,9),(8,10),(5,11),(6,12),(11,12),(11,13),(12,14),(13,15),(14,16)]
+			color_list = ['b','g','r','c','m','y','b','g','r','c','m','y','b','g','r','c']
+		else:
+			skeleton_list = [(0,3),(0,4),(1,2),(5,6),(5,7),(6,8),(7,9),(8,10),(5,11),(6,12),(11,12),(11,13),(12,14),(13,15),(14,16)]
+			color_list = ['b','g','r','c','m','y','b','g','r','c','m','y','b','g','r']
 
-	# 	for sk in skeleton_list:
-	# 		p1,p2 = sk
-	# 		x1 = kp_x[p1]
-	# 		y1 = kp_y[p1]
-	# 		x2 = kp_x[p2]
-	# 		y2 = kp_y[p2]
+		ci = 0
+		for sk in skeleton_list:
+			p1,p2 = sk
+			x1 = kp_x[p1]
+			y1 = kp_y[p1]
+			x2 = kp_x[p2]
+			y2 = kp_y[p2]
+			tc = color_list[ci]
+			ci = ci + 1
+			if (x1 >= 0) and (x2 >= 0) and (y1 >= 0) and (y2 >= 0):
+				plt.plot([x1,x2],[y1,y2], color = tc, linewidth = 3)
+		plt.imshow(crop_resize)
+		plt.show()
+
