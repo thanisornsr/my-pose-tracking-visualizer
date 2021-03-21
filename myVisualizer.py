@@ -12,6 +12,7 @@ class Posetrack_Visualizer:
 		self.imgs = []
 		self.heatmaps = []
 		self.valids = []
+		self.thres = 15
 
 	def add_data(self,to_add_imgs=None,to_add_heatmaps=None,to_add_valids=None):
 		if to_add_imgs is not None:
@@ -31,6 +32,28 @@ class Posetrack_Visualizer:
 				self.valids = to_add_valids
 			else:
 				print('Wrong type of data [valids]')
+		else:
+			if to_add_heatmaps is not None:
+				self.valids = self.get_valids()
+			else:
+				print('Please add heatmaps')
+	def get_valids(self):
+		pthres = self.thres
+		pheatmap = self.heatmaps
+		pvalid = np.empty(pheatmap.shape)
+		poutput_shape = self.output_shape
+		for j in range(pvalid.shape[0]):
+			for k in range(pvalid.shape[-1]):
+				temp_max = np.max(pheatmap[j,:,:,k])
+				if temp_max > pthres:
+					pvalid[j,:,:,k] = np.ones(poutput_shape)
+				else:
+					pvalid[j,:,:,k] = np.zeros(poutput_shape)
+		return pvalid
+		
+	def set_valid_threshold(self,new_thres):
+		self.thres = new_thres
+
 	def print_valid(self,idx_valid):
 		print(self.valids[idx_valid,0,0,:])
 	def show_heatmap(self,idx_hm):
@@ -58,17 +81,24 @@ class Posetrack_Visualizer:
 	def show_keypoints(self,idx_kp):
 		temp_img2 = np.reshape(self.imgs[idx_kp,:,:,:],(*self.input_shape,3))
 		temp_heatmap2 = np.reshape(self.heatmaps[idx_kp,:,:,:],(*self.output_shape,17))
+		temp_valid2 = self.valids[idx_kp,0,0,:]
 		crop_resize = resize(temp_img2, self.output_shape)
 		kp_x = []
 		kp_y = []
 		for j in range(17):
-			result = np.where(temp_heatmap2[:,:,j] == np.amax(temp_heatmap2[:,:,j]))
-			ty = result [0][0]
-			tx = result [1][0]
+			if temp_valid2[j] > 0:
+				result = np.where(temp_heatmap2[:,:,j] == np.amax(temp_heatmap2[:,:,j]))
+				ty = result [0][0]
+				tx = result [1][0]
+			else:
+				ty = -1
+				tx = -1
 			kp_x.append(tx)
 			kp_y.append(ty)
 		implot = plt.imshow(crop_resize)
-		plt.scatter(x = kp_x, y = kp_y,c = 'r',s = 15)
+		for xs,ys in zip(kp_x,kp_y):
+			if xs >= 0 and ys >= 0:
+				plt.scatter(x = xs, y = ys, c = 'r', s = 15)
 		plt.show()
 
 	# def show_skeleton(self,idx):
